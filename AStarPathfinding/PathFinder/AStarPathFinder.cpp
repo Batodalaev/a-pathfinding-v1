@@ -21,8 +21,9 @@ namespace PathFinder
 		//temp
 		std::vector<AStarNode> childNodes;
 
-		double hBegin = m_hasDiagonalMove ? Math::EuclideanDistance(begin, end) : Math::ManhattanDistance(begin, end);
-		AStarNode beginNode{ begin, 0, hBegin + 0 };
+		double hBegin = GetDistance(begin, end);
+		double gBegin = 0.;
+		AStarNode beginNode{ begin, gBegin, hBegin + gBegin };
 		NodeData beginNodeData{ Math::Vector2d(), beginNode.fWeight, true, false };
 
 		m_openList.insert(beginNode);
@@ -117,7 +118,7 @@ namespace PathFinder
 			{
 				if (m_map.IsInside(position) && m_map.GetField(position) != World::FieldType::Obstacle)
 				{
-					double hWeight = Math::EuclideanDistance(position, m_end);
+					double hWeight = GetDistance(position, m_end);
 					double gWeight = node.gWeight + 1.;
 
 					result.emplace_back(AStarNode{ position, gWeight, hWeight + gWeight });
@@ -132,7 +133,7 @@ namespace PathFinder
 			{
 				if (m_map.IsInside(position) && m_map.GetField(position) != World::FieldType::Obstacle)
 				{
-					double hWeight = double(Math::ManhattanDistance(position, m_end));
+					double hWeight = GetDistance(position, m_end);
 					double gWeight = node.gWeight + 1.;
 
 					result.emplace_back(AStarNode{ position, gWeight, hWeight + gWeight });
@@ -155,9 +156,13 @@ namespace PathFinder
 		{
 			path.emplace_back(currentPosition);
 
-			currentPosition = m_searchData.GetField(currentPosition).ParentPosition; 
+			currentPosition = m_searchData.GetField(currentPosition).ParentPosition;
 		}
 
 		m_path = Path2d(std::move(path));
 	}
-}
+	double AStarPathFinder::GetDistance(const Math::Vector2d& lhs, const Math::Vector2d& rhs) const noexcept
+	{
+		return m_hasDiagonalMove ? Math::EuclideanDistance(lhs, rhs) : double(Math::ManhattanDistance(lhs, rhs));
+	}
+}}

@@ -76,6 +76,7 @@ namespace PathFinder
 
 		void GetSuccessors(const AStarNode& node, std::vector<AStarNode>& result) const noexcept;
 		void FillPath(const AStarNode& node);
+		double GetDistance(const Math::Vector2d& lhs, const Math::Vector2d& rhs) const noexcept;
 
 	};
 }
