@@ -51,7 +51,7 @@ namespace PathFinder
 		const World::IMap<Math::Vector2d>& m_map;
 
 		std::unordered_map<Math::Vector2d, AStarNode> m_closedList;
-		std::set<AStarNode> m_openList;
+		std::multiset<AStarNode> m_openList;
 		Path2d m_path;
 
 		Math::Vector2d m_begin;
