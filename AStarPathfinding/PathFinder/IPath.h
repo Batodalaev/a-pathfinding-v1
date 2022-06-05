@@ -13,8 +13,8 @@ namespace PathFinder
 
 		virtual double GetLength() const noexcept = 0;
 
-		virtual void SetToBegin() noexcept = 0;
-		virtual bool Next() noexcept = 0;
+		virtual void SetToBegin() const noexcept = 0;
+		virtual bool Next() const noexcept = 0;
 		virtual bool IsEnd() const noexcept = 0;
 
 		virtual bool Contains(const TCoordinates& coordinates) const noexcept = 0;

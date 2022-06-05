@@ -30,21 +30,68 @@ constexpr char GetFieldTypeView(World::FieldType field) noexcept
 	return ' ';
 }
 
+void renderPath(Math::Matrix2d<char>& view, const PathFinder::IPath<Math::Vector2d>& path, char type)
+{
+	path.SetToBegin();
 
+	while (!path.IsEnd())
+	{
+		view.SetField(path.GetCoordinates(), type);
+		path.Next();
+	}
+	path.SetToBegin();
+}
+void renderArray(Math::Matrix2d<char>& view, const std::vector<Math::Vector2d>& positions, char type)
+{
+	for (auto&& position : positions)
+	{
+		view.SetField(position, type);
+	}
+}
+void renderMap(Math::Matrix2d<char>& view, const Math::Matrix2d<World::FieldType>& map)
+{
+	for (size_t x = 0; x < view.GetHeight(); ++x)
+	{
+		for (size_t y = 0; y < view.GetWidth(); ++y)
+		{
+			Math::Vector2d position{ x, y };
+
+			auto&& field = map.GetField(position);
+			view.SetField(position, GetFieldTypeView(field));
+		}
+	}
+}
+
+void draw(const Math::Matrix2d<char>& view)
+{
+	for (size_t x = 0; x < view.GetHeight(); ++x)
+	{
+		for (size_t y = 0; y < view.GetWidth(); ++y)
+		{
+			Math::Vector2d position{ x, y };
+			auto&& field = view.GetField(position);
+			std::cout.put(field);
+		}
+		std::cout.put('\n');
+	}
+	std::cout.flush();
+
+}
 
 int main()
 {
-	constexpr size_t Width = 8;
-	constexpr size_t Height = 8;
-	constexpr int RandomSeed = 0;
-	constexpr int ObstacleCount = 16;
-	constexpr bool HasDiagonalMove = true;
-
-	//constexpr size_t Width = 1000;
-	//constexpr size_t Height = 1000;
+	//constexpr size_t Width = 8;
+	//constexpr size_t Height = 8;
 	//constexpr int RandomSeed = 0;
-	//constexpr int ObstacleCount = Width*Height / 100;
+	//constexpr int ObstacleCount = 16;
 	//constexpr bool HasDiagonalMove = true;
+
+	constexpr size_t Width = 80;
+	constexpr size_t Height = 100;
+	constexpr int RandomSeed = 0;
+	constexpr int ObstacleCount = Width*Height / 10;
+	constexpr bool HasDiagonalMove = true;
+	constexpr bool Async = false;
 
 	World::Map2d<HasDiagonalMove> map(Width, Height);
 
@@ -72,60 +119,35 @@ int main()
 	} while (beginPosition == endPosition ||
 		map.GetField(beginPosition) == World::FieldType::Obstacle || map.GetField(endPosition) == World::FieldType::Obstacle);
 
-	
-	PathFinder::AStarPathFinder pathFinder(map);
-	const bool found = pathFinder.FindPath(beginPosition, endPosition) == PathFinder::IPathFinderResult::Found;
 
-	std::cout << (found? "Path found\n" : "Path not found\n");
-	if (found)
-		std::cout << "Path length: " << pathFinder.GetPath().GetLength() << '\n';
-
-	//show map
-	const auto& path = pathFinder.GetPath();
-	const auto& openList = pathFinder.GetOpenList();
-	const auto& closedList = pathFinder.GetClosedList();
-
-	for (size_t x = 0; x < map.GetHeight(); ++x)
+	if (Async)
 	{
-		for (size_t y = 0; y < map.GetWidth(); ++y)
-		{
-			Math::Vector2d position{ x, y };
 
-			if (position == beginPosition)
-			{
-				std::cout.put('b');
-				continue;
-			}
-			if (position == endPosition)
-			{
-				std::cout.put('e');
-				continue;
-			}
-			if (path.Contains(position))
-			{
-				std::cout.put('i');
-				continue;
-			}
-			if (std::find(std::begin(closedList), std::end(closedList), position) != std::end(closedList))
-			{
-				std::cout.put('.');
-				continue;
-			}
-			if (std::find(std::begin(openList), std::end(openList), position) != std::end(openList))
-			{
-				std::cout.put('+');
-				continue;
-			}
-
-
-			auto&& field = map.GetField(position);
-			std::cout.put(GetFieldTypeView(field));
-		}
-		std::cout.put('\n');
 	}
-	std::cout.flush();
+	else
+	{
+		PathFinder::AStarPathFinder pathFinder(map);
+		const bool found = pathFinder.FindPath(beginPosition, endPosition) == PathFinder::IPathFinderResult::Found;
 
+		std::cout << (found ? "Path found\n" : "Path not found\n");
+		if (found)
+			std::cout << "Path length: " << pathFinder.GetPath().GetLength() << '\n';
 
+		//show map
+		const auto& path = pathFinder.GetPath();
+		const auto& openList = pathFinder.GetOpenList();
+		const auto& closedList = pathFinder.GetClosedList();
+
+		Math::Matrix2d<char> view(Width, Height);
+
+		renderMap(view, map.GetFields());
+		renderArray(view, openList, 'o');
+		renderArray(view, closedList, 'c');
+		renderPath(view, path, 'i');
+		view.SetField(beginPosition, 'b');
+		view.SetField(endPosition, 'e');
+		draw(view);
+	}
 }
 
 // Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"

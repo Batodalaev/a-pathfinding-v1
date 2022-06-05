@@ -8,19 +8,19 @@ namespace PathFinder
 	class Path2d final : public IPath<Math::Vector2d>
 	{
 		std::vector<Math::Vector2d> m_path;
-		size_t m_index = 0u;
+		mutable size_t m_index = 0u;
 
 	public:
 		Path2d() = default;
 		Path2d(std::vector<Math::Vector2d>&& path) : m_path(path) {}
 		~Path2d() override = default;
 
-		Math::Vector2d GetCoordinates() const noexcept override { assert(IsEnd()); return m_path[m_index]; }
+		Math::Vector2d GetCoordinates() const noexcept override { assert(IsEnd()); return m_path[m_path.size() - m_index - 1]; }
 
 		double GetLength() const noexcept override { return double(m_path.size()); }
 
-		void SetToBegin() noexcept override { m_index = 0u; }
-		bool Next() noexcept override
+		void SetToBegin() const noexcept override { m_index = 0u; }
+		bool Next() const noexcept override
 		{
 			if (IsEnd())
 				return false;
