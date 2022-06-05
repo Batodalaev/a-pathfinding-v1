@@ -39,7 +39,7 @@ namespace PathFinder
 	public:
 		AStarPathFinder() = delete;
 		AStarPathFinder(const World::IMap<Math::Vector2d>& map) : m_map(map) {}
-		virtual ~AStarPathFinder() override = default;
+		~AStarPathFinder() override = default;
 
 		IPathFinderResult FindPath(const Math::Vector2d& begin, const Math::Vector2d& end) override;
 

@@ -16,7 +16,7 @@ namespace PathFinder
 		//temp
 		std::vector<AStarNode> childNodes;
 
-		double hBegin = m_map.GetDistance(begin, end);
+		double hBegin = Math::EuclideanDistance(begin, end);
 		AStarNode beginNode{ begin, begin, hBegin, 0, hBegin + 0 };
 		m_openList.insert(beginNode);
 
@@ -45,12 +45,8 @@ namespace PathFinder
 
 				auto it3 = m_closedList.find(childNode.Position);
 
-				if (it3 != std::end(m_closedList) && it3->second.fWeight <= childNode.fWeight)
+				if (it3 != std::end(m_closedList) && it3->second.fWeight < childNode.fWeight)
 					continue;
-
-				//todo replace
-				if (it2 != std::end(m_openList))
-					m_openList.erase(it2);
 
 				m_openList.emplace(childNode);
 			}
@@ -97,13 +93,13 @@ namespace PathFinder
 	void AStarPathFinder::GetSuccessors(const AStarNode& node, std::vector<AStarNode>& result) const noexcept
 	{
 		std::vector<Math::Vector2d> positions;
-		m_map.GetNeighbours(node.Position, positions);
+		m_map.ObtainNeighbours(node.Position, positions);
 
 		for (auto&& position : positions)
 		{
 			if (m_map.IsInside(position) && m_map.GetField(position) != World::FieldType::Obstacle)
 			{
-				double hWeight = m_map.GetDistance(position, m_end);
+				double hWeight = Math::EuclideanDistance(position, m_end);
 				double gWeight = node.gWeight + 1.;
 
 				result.emplace_back(AStarNode{ position, node.Position, hWeight , gWeight, hWeight + gWeight });
