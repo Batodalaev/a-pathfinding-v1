@@ -19,7 +19,6 @@
 
 namespace World
 {
-	template<bool hasDiagonalMove>
 	class Map2d final : public IMap<Math::Vector2d>
 	{
 		Math::Matrix2d<FieldType> m_fields;
@@ -49,23 +48,6 @@ namespace World
 		bool IsInside(const Math::Vector2d& position) const noexcept override
 		{
 			return m_fields.IsInside(position);
-		}
-
-		void ObtainNeighbours(const Math::Vector2d& position, std::vector<Math::Vector2d>& result) const noexcept override
-		{
-			assert(result.empty());
-
-			//TODO i want c++17 :(
-			if (hasDiagonalMove)
-			{
-				auto childs8way = Math::GetNeighours8way(position);
-				result.assign(std::begin(childs8way), std::end(childs8way));
-			}
-			else
-			{
-				auto childs4way = Math::GetNeighours4way(position);
-				result.assign(std::begin(childs4way), std::end(childs4way));
-			}
 		}
 	};
 }

@@ -94,9 +94,8 @@ namespace PathFinder
 
 	void AStarPathFinder::GetSuccessors(const AStarNode& node, std::vector<AStarNode>& result) const noexcept
 	{
-		std::vector<Math::Vector2d> positions;
-		m_map.ObtainNeighbours(node.Position, positions);
-
+		const auto positions = Math::GetNeighours8way(node.Position);
+	
 		for (auto&& position : positions)
 		{
 			if (m_map.IsInside(position) && m_map.GetField(position) != World::FieldType::Obstacle)
