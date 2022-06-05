@@ -6,6 +6,7 @@ namespace PathFinder
 {
 	IPathFinderResult AStarPathFinder::FindPath(const Math::Vector2d& begin, const Math::Vector2d& end)
 	{
+		m_result = IPathFinderResult::NotFound;
 		m_begin = begin;
 		m_end = end;
 
@@ -36,7 +37,8 @@ namespace PathFinder
 				{
 					FillPath(node);
 
-					return IPathFinderResult::Found;
+					m_result = IPathFinderResult::Found;
+					return m_result;
 				}
 
 				auto it2 = m_openList.find(childNode);
@@ -61,7 +63,7 @@ namespace PathFinder
 			}
 		}
 
-		return IPathFinderResult::NotFound;
+		return m_result;
 	}
 
 	std::vector<Math::Vector2d> AStarPathFinder::GetClosedList() const

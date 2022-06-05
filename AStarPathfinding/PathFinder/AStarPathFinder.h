@@ -42,7 +42,7 @@ namespace PathFinder
 		~AStarPathFinder() override = default;
 
 		IPathFinderResult FindPath(const Math::Vector2d& begin, const Math::Vector2d& end) override;
-
+		IPathFinderResult GetResult() const noexcept override { return m_result; }
 		const IPath<Math::Vector2d>& GetPath() const noexcept override { return m_path; }
 
 		std::vector<Math::Vector2d> GetClosedList() const;
@@ -50,12 +50,14 @@ namespace PathFinder
 	private:
 		const World::IMap<Math::Vector2d>& m_map;
 
-		Path2d m_path;
 		std::unordered_map<Math::Vector2d, AStarNode> m_closedList;
 		std::set<AStarNode> m_openList;
+		Path2d m_path;
 
 		Math::Vector2d m_begin;
 		Math::Vector2d m_end;
+
+		IPathFinderResult m_result = IPathFinderResult::NotFound;
 
 		void GetSuccessors(const AStarNode& node, std::vector<AStarNode>& result) const noexcept;
 		void FillPath(const AStarNode& node);
