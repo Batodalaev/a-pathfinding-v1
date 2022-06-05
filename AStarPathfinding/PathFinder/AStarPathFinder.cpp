@@ -165,4 +165,4 @@ namespace PathFinder
 	{
 		return m_hasDiagonalMove ? Math::EuclideanDistance(lhs, rhs) : double(Math::ManhattanDistance(lhs, rhs));
 	}
-}}
+}
