@@ -144,6 +144,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AStarPathfinding.cpp" />
+    <ClCompile Include="Pathfinder\AStarPathFinder.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Math\Vector2d.h" />
+    <ClInclude Include="Pathfinder\AStarPathFinder.h" />
+    <ClInclude Include="Pathfinder\IPathFinder.h" />
+    <ClInclude Include="World\FieldType.h" />
+    <ClInclude Include="World\IMap.h" />
+    <ClInclude Include="World\Map2d.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -13,10 +13,42 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{25dd4c85-67e7-4c00-837b-6e81e796e1c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PathFinder">
+      <UniqueIdentifier>{412dd50b-c8b6-49d7-88a5-226251df6f62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="World">
+      <UniqueIdentifier>{46715373-90ab-45ac-897e-2b68c607a2bd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AStarPathfinding.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="Pathfinder\AStarPathFinder.cpp">
+      <Filter>PathFinder</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Math\Vector2d.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Pathfinder\IPathFinder.h">
+      <Filter>PathFinder</Filter>
+    </ClInclude>
+    <ClInclude Include="Pathfinder\AStarPathFinder.h">
+      <Filter>PathFinder</Filter>
+    </ClInclude>
+    <ClInclude Include="World\FieldType.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="World\IMap.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Map2d.h">
+      <Filter>World</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
