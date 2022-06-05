@@ -157,6 +157,9 @@
     <ClInclude Include="World\IMap.h" />
     <ClInclude Include="World\Map2d.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="input.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

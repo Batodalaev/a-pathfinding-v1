@@ -12,6 +12,7 @@
 #include <thread>
 #include <future>
 #include <thread>
+#include <fstream>
 
 #include "World/FieldType.h"
 #include "Math/Vector2d.h"
@@ -114,61 +115,44 @@ void renderPathFinder(Math::Matrix2d<char>& view, const PathFinder::AStarPathFin
 	}
 }
 
-World::Map2d generateMap()
+World::Map2d loadMap(std::string fileName, Math::Vector2d& beginPosition, Math::Vector2d& endPosition)
 {
-	//constexpr size_t Width = 8;
-	//constexpr size_t Height = 8;
-	//constexpr int RandomSeed = 0;
-	//constexpr int ObstacleCount = 16;
+	std::ifstream input(fileName, std::ios::in);
 
-	//constexpr size_t Width = 79;
-	//constexpr size_t Height = 65;
-	//constexpr int RandomSeed = 2;
-	//constexpr int ObstacleCount = 1000;// Width* Height / 10;
+	assert(input.is_open());
 
-	constexpr size_t Width = 5000;
-	constexpr size_t Height = 5000;
-	constexpr int RandomSeed = 0;
-	constexpr int ObstacleCount = Width* Height / 4000;
+	size_t width, height;
+	input >> width >> height;
 
-	World::Map2d map(Width, Height);
+	World::Map2d map(width, height);
 
-	//random set obstacles
-	srand(RandomSeed);
-	for (int i = 0; i < ObstacleCount; ++i)
+	std::string buf;
+	for (size_t x = 0; x < map.GetHeight(); ++x)
 	{
-		size_t obstacle = size_t(rand()) % (map.GetHeight() * map.GetWidth());
-		Math::Vector2d obstaclePosition{ obstacle / map.GetWidth(), obstacle % map.GetWidth() };
+		input >> buf;
+		for (size_t y = 0; y < map.GetWidth(); ++y)
+		{
+			Math::Vector2d position{ x, y };
 
-		map.SetField(obstaclePosition, World::FieldType::Obstacle);
+			switch (buf[y])
+			{
+			case '0': map.SetField(position, World::FieldType::None); break;
+			case '1': map.SetField(position, World::FieldType::Obstacle); break;
+			case BeginPath: beginPosition = position; break;
+			case EndPath: endPosition = position; break;
+			}
+		}
 	}
 
 	return map;
 }
 
-std::array<Math::Vector2d, 2> generatePositions(const World::Map2d& map)
-{
-	//random set begin and end
-	Math::Vector2d beginPosition;
-	Math::Vector2d endPosition;
-	do
-	{
-		size_t begin = size_t(rand()) % (map.GetHeight() * map.GetWidth());
-		beginPosition = Math::Vector2d{ begin / map.GetWidth(), begin % map.GetWidth() };
-
-		size_t end = size_t(rand()) % (map.GetHeight() * map.GetWidth());
-		endPosition = Math::Vector2d{ end / map.GetWidth(), end % map.GetWidth() };
-
-	} while (beginPosition == endPosition);
-
-	return { beginPosition, endPosition };
-}
 int main()
 {
-	auto map = generateMap();
-	auto positions = generatePositions(map);
-	auto beginPosition = positions[0];
-	auto endPosition = positions[1];
+	Math::Vector2d beginPosition;
+	Math::Vector2d endPosition;
+
+	auto map = loadMap("input.txt", beginPosition, endPosition);// generateMap();
 
 	//force empty field
 	map.SetField(beginPosition, World::FieldType::None);
@@ -233,6 +217,7 @@ int main()
 			std::cout << "Finding a path\n\n";
 		}
 
+		//todo draggable view
 		if(view.GetWidth() <= MaxViewWidth && view.GetHeight() <= MaxViewHeight)
 			draw(view);
 
