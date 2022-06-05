@@ -15,7 +15,7 @@ namespace PathFinder
 		Path2d(std::vector<Math::Vector2d>&& path) : m_path(path) {}
 		~Path2d() override = default;
 
-		Math::Vector2d GetCoordinates() const noexcept override { assert(IsEnd()); return m_path[m_path.size() - m_index - 1]; }
+		Math::Vector2d GetCoordinates() const noexcept override { assert(!IsEnd()); return m_path[m_path.size() - m_index - 1]; }
 
 		double GetLength() const noexcept override { return double(m_path.size()); }
 
