@@ -144,15 +144,38 @@ World::Map2d loadMap(std::string fileName, Math::Vector2d& beginPosition, Math::
 		}
 	}
 
+	input.close();
+
 	return map;
+}
+
+void saveMap(std::string fileName, const Math::Matrix2d<char>& view)
+{
+	std::ofstream output(fileName, std::ios::out);
+
+	for (size_t x = 0; x < view.GetHeight(); ++x)
+	{
+		for (size_t y = 0; y < view.GetWidth(); ++y)
+		{
+			Math::Vector2d position{ x, y };
+			auto&& field = view.GetField(position);
+			output.put(field);
+		}
+		output.put('\n');
+	}
+	output.flush();
+
+	output.close();
 }
 
 int main()
 {
-	Math::Vector2d beginPosition;
-	Math::Vector2d endPosition;
+	Math::Vector2d beginPosition{ 0, 0 };
+	Math::Vector2d endPosition{ 100, 100 };
 
-	auto map = loadMap("input.txt", beginPosition, endPosition);// generateMap();
+	//auto map = loadMap("input_1000_1000.txt", beginPosition, endPosition);// generateMap();
+	auto map = loadMap("input.txt", beginPosition, endPosition);
+
 
 	//force empty field
 	map.SetField(beginPosition, World::FieldType::None);
@@ -179,6 +202,7 @@ int main()
 
 	while (true)
 	{
+		const bool wasStopped = pathFinderStopped;
 		//update
 		if (future.valid())
 		{
@@ -192,7 +216,6 @@ int main()
 				pathFinderStopped = true;
 			}
 		}
-
 
 		//draw to view
 		renderMap(view, map.GetFields());
@@ -220,6 +243,12 @@ int main()
 		//todo draggable view
 		if(view.GetWidth() <= MaxViewWidth && view.GetHeight() <= MaxViewHeight)
 			draw(view);
+
+		//save to file
+		if (wasStopped != pathFinderStopped)
+		{
+			saveMap("output.txt", view);
+		}
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(FrameTime));
 	}
