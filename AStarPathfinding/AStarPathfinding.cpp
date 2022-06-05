@@ -80,38 +80,56 @@ void draw(const Math::Matrix2d<char>& view)
 	}
 	std::cout.flush();
 }
+void renderPathFinder(Math::Matrix2d<char>& view, const PathFinder::AStarPathFinder& pathFinder, bool hasDebug = false)
+{
+	const bool found = pathFinder.GetResult() == PathFinder::IPathFinderResult::Found;
 
-int main()
+	if (hasDebug)
+	{
+		const auto& openList = pathFinder.GetOpenList();
+		const auto& closedList = pathFinder.GetClosedList();
+
+		renderArray(view, openList, 'o');
+		renderArray(view, closedList, 'c');
+	}
+
+	if (found)
+	{
+		const auto& path = pathFinder.GetPath();
+
+		renderPath(view, path, 'i');
+	}
+}
+
+World::Map2d generateMap()
 {
 	//constexpr size_t Width = 8;
 	//constexpr size_t Height = 8;
 	//constexpr int RandomSeed = 0;
 	//constexpr int ObstacleCount = 16;
-	//constexpr bool HasDiagonalMove = true;
 
 	constexpr size_t Width = 79;
 	constexpr size_t Height = 65;
 	constexpr int RandomSeed = 2;
 	constexpr int ObstacleCount = 1000;// Width* Height / 10;
-	constexpr bool HasDiagonalMove = true;
 
-	bool Debug = false;
-	constexpr bool Async = true;
-	double FPS = 1.;
-	size_t FrameTime = size_t(1000. / FPS);
-
-	World::Map2d<HasDiagonalMove> map(Width, Height);
+	World::Map2d map(Width, Height);
 
 	//random set obstacles
 	srand(RandomSeed);
 	for (int i = 0; i < ObstacleCount; ++i)
 	{
 		size_t obstacle = size_t(rand()) % (map.GetHeight() * map.GetWidth());
-		Math::Vector2d obstaclePosition { obstacle / map.GetWidth(), obstacle % map.GetWidth() };
+		Math::Vector2d obstaclePosition{ obstacle / map.GetWidth(), obstacle % map.GetWidth() };
 
 		map.SetField(obstaclePosition, World::FieldType::Obstacle);
 	}
 
+	return map;
+}
+
+std::array<Math::Vector2d, 2> generate(const World::Map2d& map)
+{
 	//random set begin and end
 	Math::Vector2d beginPosition;
 	Math::Vector2d endPosition;
@@ -126,100 +144,73 @@ int main()
 	} while (beginPosition == endPosition ||
 		map.GetField(beginPosition) == World::FieldType::Obstacle || map.GetField(endPosition) == World::FieldType::Obstacle);
 
-	if (Async)
-	{
-		auto mapAsync = map;
-		PathFinder::AStarPathFinder pathFinder(mapAsync);
+	return { beginPosition, endPosition };
+}
+int main()
+{
+	auto map = generateMap();
+	auto positions = generate(map);
+	auto beginPosition = positions[0];
+	auto endPosition = positions[1];
 
-		std::future<PathFinder::IPathFinderResult> future = std::async(std::launch::async, [&]()
+	bool Debug = false;
+	constexpr bool Async = false;
+	double FPS = 1.;
+	size_t FrameTime = size_t(1000. / FPS);
+
+	//copy map for async path finding
+	auto mapAsync = map;
+	PathFinder::AStarPathFinder pathFinder(mapAsync);
+
+	std::future<PathFinder::IPathFinderResult> future =
+		std::async(Async ? std::launch::async : std::launch::deferred, [&]()
 			{
-			return pathFinder.FindPath(beginPosition, endPosition);
+				return pathFinder.FindPath(beginPosition, endPosition);
 			});
 
-		Math::Matrix2d<char> view(Width, Height);
+	Math::Matrix2d<char> view(map.GetWidth(), map.GetHeight());
+	bool pathFinderStopped = false;
 
-		renderMap(view, map.GetFields());
-
-		bool pathFinderStopped = false;
-		while (true)
-		{
-			if (future.valid())
-			{
-				std::future_status status = future.wait_for(std::chrono::milliseconds(FrameTime));
-				if (status == std::future_status::ready)
-					pathFinderStopped = true;					
-			}
-			
-			if(pathFinderStopped)
-			{
-				const bool found = pathFinder.GetResult() == PathFinder::IPathFinderResult::Found;
-				
-				const auto& path = pathFinder.GetPath();
-
-				if (Debug)
-				{
-					const auto& openList = pathFinder.GetOpenList();
-					const auto& closedList = pathFinder.GetClosedList();
-
-					renderArray(view, openList, 'o');
-					renderArray(view, closedList, 'c');
-				}
-
-				if (found)
-				{
-					renderPath(view, path, 'i');
-				}
-				view.SetField(beginPosition, 'b');
-				view.SetField(endPosition, 'e');
-
-				std::this_thread::sleep_for(std::chrono::milliseconds(FrameTime));
-			}
-			
-			system("cls");
-
-			if (pathFinderStopped)
-			{
-				const bool found = pathFinder.GetResult() == PathFinder::IPathFinderResult::Found;
-				std::cout << (found ? "Path found\n" : "Path not found\n");
-			}
-			else
-			{
-				std::cout << "Finding a path\n";
-			}
-
-			draw(view);
-		}
-	}
-	else
+	while (true)
 	{
-		PathFinder::AStarPathFinder pathFinder(map);
-		const bool found = pathFinder.FindPath(beginPosition, endPosition) == PathFinder::IPathFinderResult::Found;
-
-		//show map
-		const auto& path = pathFinder.GetPath();
-		
-		Math::Matrix2d<char> view(Width, Height);
-
-		renderMap(view, map.GetFields());
-
-		if (Debug)
+		//update
+		if (future.valid())
 		{
-			const auto& openList = pathFinder.GetOpenList();
-			const auto& closedList = pathFinder.GetClosedList();
-			renderArray(view, openList, 'o');
-			renderArray(view, closedList, 'c');
-		}
-		if (found)
-			renderPath(view, path, 'i');
+			std::future_status status = future.wait_for(std::chrono::milliseconds(0));
+			if (status == std::future_status::ready)
+				pathFinderStopped = true;
 
+			if (status == std::future_status::deferred)
+			{
+				future.get();
+				pathFinderStopped = true;
+			}
+		}
+
+
+		//draw to view
+		renderMap(view, map.GetFields());
+		if (pathFinderStopped)
+		{
+			renderPathFinder(view, pathFinder, Debug);
+		}
 		view.SetField(beginPosition, 'b');
 		view.SetField(endPosition, 'e');
+
+		//draw to console
+		system("cls");
+		if (pathFinderStopped)
+		{
+			const bool found = pathFinder.GetResult() == PathFinder::IPathFinderResult::Found;
+			std::cout << (found ? "Path found\n\n" : "Path not found\n\n");
+		}
+		else
+		{
+			std::cout << "Finding a path\n\n";
+		}
 		draw(view);
 
-		std::cout << (found ? "Path found\n" : "Path not found\n");
-		if (found)
-			std::cout << "Path length: " << pathFinder.GetPath().GetLength() << '\n';
-
+		std::this_thread::sleep_for(std::chrono::milliseconds(FrameTime));
 	}
 }
 
