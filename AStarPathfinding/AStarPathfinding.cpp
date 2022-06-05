@@ -128,7 +128,7 @@ World::Map2d generateMap()
 	return map;
 }
 
-std::array<Math::Vector2d, 2> generate(const World::Map2d& map)
+std::array<Math::Vector2d, 2> generatePositions(const World::Map2d& map)
 {
 	//random set begin and end
 	Math::Vector2d beginPosition;
@@ -149,7 +149,7 @@ std::array<Math::Vector2d, 2> generate(const World::Map2d& map)
 int main()
 {
 	auto map = generateMap();
-	auto positions = generate(map);
+	auto positions = generatePositions(map);
 	auto beginPosition = positions[0];
 	auto endPosition = positions[1];
 
