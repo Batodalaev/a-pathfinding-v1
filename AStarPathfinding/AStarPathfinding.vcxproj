@@ -147,6 +147,7 @@
     <ClCompile Include="Pathfinder\AStarPathFinder.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Math\Matrix2d.h" />
     <ClInclude Include="Math\Vector2d.h" />
     <ClInclude Include="Pathfinder\AStarPathFinder.h" />
     <ClInclude Include="Pathfinder\IPath.h" />

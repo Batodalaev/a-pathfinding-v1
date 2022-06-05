@@ -14,8 +14,6 @@ namespace World
 
 		virtual bool IsInside(const TCoordinates& position) const noexcept = 0;
 
-		virtual void GetNeighbours(const TCoordinates& position, std::vector<TCoordinates>& result) const noexcept = 0;
-
-		virtual double GetDistance(const TCoordinates& lhs, const TCoordinates& rhs) const noexcept = 0;
+		virtual void ObtainNeighbours(const TCoordinates& position, std::vector<TCoordinates>& result) const noexcept = 0;
 	};
 }

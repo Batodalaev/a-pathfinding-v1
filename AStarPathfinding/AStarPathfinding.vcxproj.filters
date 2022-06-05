@@ -59,5 +59,8 @@
     <ClInclude Include="Pathfinder\Path2d.h">
       <Filter>PathFinder</Filter>
     </ClInclude>
+    <ClInclude Include="Math\Matrix2d.h">
+      <Filter>Math</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
