@@ -149,7 +149,9 @@
   <ItemGroup>
     <ClInclude Include="Math\Vector2d.h" />
     <ClInclude Include="Pathfinder\AStarPathFinder.h" />
+    <ClInclude Include="Pathfinder\IPath.h" />
     <ClInclude Include="Pathfinder\IPathFinder.h" />
+    <ClInclude Include="Pathfinder\Path2d.h" />
     <ClInclude Include="World\FieldType.h" />
     <ClInclude Include="World\IMap.h" />
     <ClInclude Include="World\Map2d.h" />

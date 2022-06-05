@@ -72,7 +72,7 @@ int main()
 
 	std::cout << (found? "Path found\n" : "Path not found\n");
 	if (found)
-		std::cout << "Path length: " << pathFinder.GetPath().size();
+		std::cout << "Path length: " << pathFinder.GetPath().GetLength();
 
 	return 0;
 
@@ -97,7 +97,7 @@ int main()
 				std::cout.put('e');
 				continue;
 			}
-			if (std::find(std::begin(path), std::end(path), position) != std::end(path))
+			if (path.Contains(position))
 			{
 				std::cout.put('i');
 				continue;

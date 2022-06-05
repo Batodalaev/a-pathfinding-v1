@@ -4,8 +4,9 @@
 #include <set>
 
 #include "IPathFinder.h"
-#include "..\World\IMap.h"
+#include "Path2d.h"
 
+#include "..\World\IMap.h"
 #include "..\Math\Vector2d.h"
 
 namespace details
@@ -40,14 +41,14 @@ public:
 
 	IPathFinderResult FindPath(const Vector2d& begin, const Vector2d& end) override;
 
-	const std::vector<Vector2d>& GetPath() const noexcept override {	return m_path; }
+	const IPath<Vector2d>& GetPath() const noexcept override {	return m_path; }
 
 	std::vector<Vector2d> GetClosedList() const;
 	std::vector<Vector2d> GetOpenList() const;
 private:
 	const IMap<Vector2d>& m_map;
 
-	std::vector<Vector2d> m_path;
+	Path2d m_path;
 	std::unordered_map<Vector2d, AStarNode> m_closedList;
 	std::set<AStarNode> m_openList;
 

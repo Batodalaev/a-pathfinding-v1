@@ -8,7 +8,7 @@ IPathFinderResult AStarPathFinder::FindPath(const Vector2d& begin, const Vector2
 
 	m_openList.clear();
 	m_closedList.clear();
-	m_path.clear();
+	m_path = Path2d();
 
 	//temp
 	std::vector<AStarNode> childNodes;
@@ -110,17 +110,20 @@ void AStarPathFinder::GetSuccessors(const AStarNode& node, std::vector<AStarNode
 
 void AStarPathFinder::FillPath(const AStarNode& node)
 {
-	const size_t length = node.gWeight + 1;
-	m_path.reserve(length);
+	const size_t length = size_t(node.gWeight + 1.);
+	std::vector<Vector2d> path;
+	path.reserve(length);
 
-	m_path.emplace_back(m_end);
+	path.emplace_back(m_end);
 
 	auto currentNode = node;
 
 	while (currentNode.Position != m_begin)
 	{
-		m_path.emplace_back(currentNode.Position);
+		path.emplace_back(currentNode.Position);
 
 		currentNode = m_closedList.find(currentNode.ParentPosition)->second;
 	}
+
+	m_path = Path2d(std::move(path));
 }
