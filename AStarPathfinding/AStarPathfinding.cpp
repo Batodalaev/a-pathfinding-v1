@@ -15,13 +15,13 @@
 #include "PathFinder/AStarPathFinder.h"
 
 
-constexpr char GetFieldTypeView(FieldType field) noexcept
+constexpr char GetFieldTypeView(World::FieldType field) noexcept
 {
 	switch (field)
 	{
-	case FieldType::Obstacle:
+	case World::FieldType::Obstacle:
 		return 'X';
-	case FieldType::None:
+	case World::FieldType::None:
 		return ' ';
 	default:
 		assert(false);
@@ -34,47 +34,51 @@ constexpr char GetFieldTypeView(FieldType field) noexcept
 
 int main()
 {
-	constexpr size_t Width = 1000;
-	constexpr size_t Height = 1000;
+	constexpr size_t Width = 8;
+	constexpr size_t Height = 8;
 	constexpr int RandomSeed = 0;
-	constexpr int ObstacleCount = Width*Height / 100;
+	constexpr int ObstacleCount = 16;
 	constexpr bool HasDiagonalMove = true;
 
-	Map2d<HasDiagonalMove> map(Width, Height);
+	//constexpr size_t Width = 1000;
+	//constexpr size_t Height = 1000;
+	//constexpr int RandomSeed = 0;
+	//constexpr int ObstacleCount = Width*Height / 100;
+	//constexpr bool HasDiagonalMove = true;
+
+	World::Map2d<HasDiagonalMove> map(Width, Height);
 
 	//random set obstacles
 	srand(RandomSeed);
 	for (int i = 0; i < ObstacleCount; ++i)
 	{
 		size_t obstacle = size_t(rand()) % (map.GetHeight() * map.GetWidth());
-		Vector2d obstaclePosition { obstacle / map.GetWidth(), obstacle % map.GetWidth() };
+		Math::Vector2d obstaclePosition { obstacle / map.GetWidth(), obstacle % map.GetWidth() };
 
-		map.SetField(obstaclePosition, FieldType::Obstacle);
+		map.SetField(obstaclePosition, World::FieldType::Obstacle);
 	}
 
 	//random set begin and end
-	Vector2d beginPosition;
-	Vector2d endPosition;
+	Math::Vector2d beginPosition;
+	Math::Vector2d endPosition;
 	do
 	{
 		size_t begin = size_t(rand()) % (map.GetHeight() * map.GetWidth());
-		beginPosition = Vector2d{ begin / map.GetWidth(), begin % map.GetWidth() };
+		beginPosition = Math::Vector2d{ begin / map.GetWidth(), begin % map.GetWidth() };
 
 		size_t end = size_t(rand()) % (map.GetHeight() * map.GetWidth());
-		endPosition = Vector2d{ end / map.GetWidth(), end % map.GetWidth() };
+		endPosition = Math::Vector2d{ end / map.GetWidth(), end % map.GetWidth() };
 
 	} while (beginPosition == endPosition ||
-		map.GetField(beginPosition) == FieldType::Obstacle || map.GetField(endPosition) == FieldType::Obstacle);
+		map.GetField(beginPosition) == World::FieldType::Obstacle || map.GetField(endPosition) == World::FieldType::Obstacle);
 
 	
-	AStarPathFinder pathFinder(map);
-	const bool found = pathFinder.FindPath(beginPosition, endPosition) == IPathFinderResult::Found;
+	PathFinder::AStarPathFinder pathFinder(map);
+	const bool found = pathFinder.FindPath(beginPosition, endPosition) == PathFinder::IPathFinderResult::Found;
 
 	std::cout << (found? "Path found\n" : "Path not found\n");
 	if (found)
-		std::cout << "Path length: " << pathFinder.GetPath().GetLength();
-
-	return 0;
+		std::cout << "Path length: " << pathFinder.GetPath().GetLength() << '\n';
 
 	//show map
 	const auto& path = pathFinder.GetPath();
@@ -85,7 +89,7 @@ int main()
 	{
 		for (size_t y = 0; y < map.GetWidth(); ++y)
 		{
-			Vector2d position{ x, y };
+			Math::Vector2d position{ x, y };
 
 			if (position == beginPosition)
 			{

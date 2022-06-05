@@ -2,34 +2,37 @@
 #include "IPath.h"
 #include "..\Math\Vector2d.h"
 
-//Поиск пути алгоритмом А*
-class Path2d final : public IPath<Vector2d>
+namespace PathFinder
 {
-	std::vector<Vector2d> m_path;
-	size_t m_index = 0u;
-
-public:
-	Path2d() = default;
-	Path2d(std::vector<Vector2d>&& path) : m_path(path) {}
-	~Path2d() override = default;
-
-	Vector2d GetCoordinates() const noexcept override { assert(IsEnd()); return m_path[m_index]; }
-
-	double GetLength() const noexcept override { return double(m_path.size()); }
-
-	void SetToBegin() noexcept override { m_index = 0u; }
-	bool Next() noexcept override
+	//Поиск пути алгоритмом А*
+	class Path2d final : public IPath<Math::Vector2d>
 	{
-		if (IsEnd())
-			return false;
+		std::vector<Math::Vector2d> m_path;
+		size_t m_index = 0u;
 
-		++m_index;
-		return true;
-	}
-	bool IsEnd() const noexcept override { return m_index == m_path.size(); }
+	public:
+		Path2d() = default;
+		Path2d(std::vector<Math::Vector2d>&& path) : m_path(path) {}
+		~Path2d() override = default;
 
-	bool Contains(const Vector2d& coordinates) const noexcept override
-	{
-		return std::find(std::begin(m_path), std::end(m_path), coordinates) != std::end(m_path);
-	}
-};
+		Math::Vector2d GetCoordinates() const noexcept override { assert(IsEnd()); return m_path[m_index]; }
+
+		double GetLength() const noexcept override { return double(m_path.size()); }
+
+		void SetToBegin() noexcept override { m_index = 0u; }
+		bool Next() noexcept override
+		{
+			if (IsEnd())
+				return false;
+
+			++m_index;
+			return true;
+		}
+		bool IsEnd() const noexcept override { return m_index == m_path.size(); }
+
+		bool Contains(const Math::Vector2d& coordinates) const noexcept override
+		{
+			return std::find(std::begin(m_path), std::end(m_path), coordinates) != std::end(m_path);
+		}
+	};
+}

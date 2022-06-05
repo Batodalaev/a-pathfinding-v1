@@ -9,53 +9,56 @@
 #include "..\World\IMap.h"
 #include "..\Math\Vector2d.h"
 
-namespace details
+namespace PathFinder
 {
-	struct AStarNode
+	namespace details
 	{
-		Vector2d Position;
-		Vector2d ParentPosition;
+		struct AStarNode
+		{
+			Math::Vector2d Position;
+			Math::Vector2d ParentPosition;
 
-		double hWeight = 0.;
-		double gWeight = 0.;
-		double fWeight = 0.;
-	};
+			double hWeight = 0.;
+			double gWeight = 0.;
+			double fWeight = 0.;
+		};
 
-	constexpr bool operator < (const AStarNode& lhs, const AStarNode& rhs)
-	{
-		//We need to overload "<" to put our struct into a set
-		return lhs.fWeight < rhs.fWeight;
+		constexpr bool operator < (const AStarNode& lhs, const AStarNode& rhs)
+		{
+			//We need to overload "<" to put our struct into a set
+			return lhs.fWeight < rhs.fWeight;
+		}
+
 	}
 
+	//Поиск пути алгоритмом А*
+	class AStarPathFinder final : public IPathFinder<Math::Vector2d>
+	{
+		using AStarNode = details::AStarNode;
+
+	public:
+		AStarPathFinder() = delete;
+		AStarPathFinder(const World::IMap<Math::Vector2d>& map) : m_map(map) {}
+		virtual ~AStarPathFinder() override = default;
+
+		IPathFinderResult FindPath(const Math::Vector2d& begin, const Math::Vector2d& end) override;
+
+		const IPath<Math::Vector2d>& GetPath() const noexcept override { return m_path; }
+
+		std::vector<Math::Vector2d> GetClosedList() const;
+		std::vector<Math::Vector2d> GetOpenList() const;
+	private:
+		const World::IMap<Math::Vector2d>& m_map;
+
+		Path2d m_path;
+		std::unordered_map<Math::Vector2d, AStarNode> m_closedList;
+		std::set<AStarNode> m_openList;
+
+		Math::Vector2d m_begin;
+		Math::Vector2d m_end;
+
+		void GetSuccessors(const AStarNode& node, std::vector<AStarNode>& result) const noexcept;
+		void FillPath(const AStarNode& node);
+
+	};
 }
-
-//Поиск пути алгоритмом А*
-class AStarPathFinder final : public IPathFinder<Vector2d>
-{
-	using AStarNode = details::AStarNode;
-
-public:
-	AStarPathFinder() = delete;
-	AStarPathFinder(const IMap<Vector2d>& map) : m_map(map) {}
-	virtual ~AStarPathFinder() override = default;
-
-	IPathFinderResult FindPath(const Vector2d& begin, const Vector2d& end) override;
-
-	const IPath<Vector2d>& GetPath() const noexcept override {	return m_path; }
-
-	std::vector<Vector2d> GetClosedList() const;
-	std::vector<Vector2d> GetOpenList() const;
-private:
-	const IMap<Vector2d>& m_map;
-
-	Path2d m_path;
-	std::unordered_map<Vector2d, AStarNode> m_closedList;
-	std::set<AStarNode> m_openList;
-
-	Vector2d m_begin;
-	Vector2d m_end;
-
-	void GetSuccessors(const AStarNode& node, std::vector<AStarNode>& result) const noexcept;
-	void FillPath(const AStarNode& node);
-
-};

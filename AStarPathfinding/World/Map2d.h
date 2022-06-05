@@ -16,64 +16,67 @@
 /// (0;0) - top left corner
 /// </summary>
 
-template<bool hasDiagonalMove>
-class Map2d final : public IMap<Vector2d>
+namespace World
 {
-	std::vector<FieldType> m_fields;
-	size_t m_width = 0u;
-	size_t m_height = 0u;
-
-public:
-
-	Map2d() = delete;
-	Map2d(size_t width, size_t height) : m_fields(width* height, FieldType::None), m_width(width), m_height(height) {}
-	~Map2d() override = default;
-
-	size_t GetWidth() const noexcept { return m_width; }
-	size_t GetHeight() const noexcept { return m_height; }
-
-	FieldType GetField(const Vector2d& position) const noexcept override
+	template<bool hasDiagonalMove>
+	class Map2d final : public IMap<Math::Vector2d>
 	{
-		assert(IsInside(position));
-		return m_fields[position.X * m_width + position.Y];
-	}
+		std::vector<FieldType> m_fields;
+		size_t m_width = 0u;
+		size_t m_height = 0u;
 
-	void SetField(const Vector2d& position, FieldType  type) noexcept
-	{
-		assert(IsInside(position));
-		m_fields[position.X * m_width + position.Y] = type;
-	}
+	public:
 
-	bool IsInside(const Vector2d& position) const noexcept override
-	{
-		return position.X < m_height&& position.Y < m_width;
-	}
+		Map2d() = delete;
+		Map2d(size_t width, size_t height) : m_fields(width* height, FieldType::None), m_width(width), m_height(height) {}
+		~Map2d() override = default;
 
-	void GetNeighbours(const Vector2d& position, std::vector<Vector2d>& result) const noexcept override
-	{
-		assert(result.empty());
+		size_t GetWidth() const noexcept { return m_width; }
+		size_t GetHeight() const noexcept { return m_height; }
 
-		//TODO i want c++17 :(
-		if (hasDiagonalMove)
+		FieldType GetField(const Math::Vector2d& position) const noexcept override
 		{
-			auto childs8way = GetNeighours8way(position);
-			result.assign(std::begin(childs8way), std::end(childs8way));
+			assert(IsInside(position));
+			return m_fields[position.X * m_width + position.Y];
 		}
-		else
+
+		void SetField(const Math::Vector2d& position, FieldType  type) noexcept
 		{
-			auto childs4way = GetNeighours4way(position);
-			result.assign(std::begin(childs4way), std::end(childs4way));
+			assert(IsInside(position));
+			m_fields[position.X * m_width + position.Y] = type;
 		}
-	}
 
-	double GetDistance(const Vector2d& lhs, const Vector2d& rhs) const noexcept override
-	{
-		//return EuclideanDistance(lhs, rhs);
+		bool IsInside(const Math::Vector2d& position) const noexcept override
+		{
+			return position.X < m_height&& position.Y < m_width;
+		}
 
-		//TODO i want c++17 :(
-		if (hasDiagonalMove)
-			return DiagonalDistance(lhs, rhs);
-		
-		return double(ManhattanDistance(lhs, rhs));
-	}
-};
+		void GetNeighbours(const Math::Vector2d& position, std::vector<Math::Vector2d>& result) const noexcept override
+		{
+			assert(result.empty());
+
+			//TODO i want c++17 :(
+			if (hasDiagonalMove)
+			{
+				auto childs8way = GetNeighours8way(position);
+				result.assign(std::begin(childs8way), std::end(childs8way));
+			}
+			else
+			{
+				auto childs4way = GetNeighours4way(position);
+				result.assign(std::begin(childs4way), std::end(childs4way));
+			}
+		}
+
+		double GetDistance(const Math::Vector2d& lhs, const Math::Vector2d& rhs) const noexcept override
+		{
+			//return EuclideanDistance(lhs, rhs);
+
+			//TODO i want c++17 :(
+			if (hasDiagonalMove)
+				return DiagonalDistance(lhs, rhs);
+
+			return double(ManhattanDistance(lhs, rhs));
+		}
+	};
+}
