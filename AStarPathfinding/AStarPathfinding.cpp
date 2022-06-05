@@ -21,6 +21,9 @@
 
 namespace
 {
+	constexpr char InputObstacle = '1';
+	constexpr char InputEmptyField = '0';
+
 	constexpr char Obstacle = 'X';
 	constexpr char EmptyField = ' ';
 	constexpr char BeginPath = 'b';
@@ -31,6 +34,16 @@ namespace
 
 	constexpr size_t MaxViewWidth = 79;
 	constexpr size_t MaxViewHeight = 65;
+
+	constexpr bool HasDiagonalMove = true;
+	constexpr bool Debug = true;
+	constexpr bool SaveToFile = true;
+	constexpr bool Async = true;
+	constexpr double FPS = 1.;
+	constexpr size_t FrameTime = size_t(1000. / FPS);
+
+	constexpr Math::Vector2d DefaultBeginPosition{ 0, 0 };
+	constexpr Math::Vector2d DefaultEndPosition{ 100, 100 };
 }
 
 constexpr char GetFieldTypeView(World::FieldType field) noexcept
@@ -136,8 +149,8 @@ World::Map2d loadMap(std::string fileName, Math::Vector2d& beginPosition, Math::
 
 			switch (buf[y])
 			{
-			case '0': map.SetField(position, World::FieldType::None); break;
-			case '1': map.SetField(position, World::FieldType::Obstacle); break;
+			case InputEmptyField: map.SetField(position, World::FieldType::None); break;
+			case InputObstacle: map.SetField(position, World::FieldType::Obstacle); break;
 			case BeginPath: beginPosition = position; break;
 			case EndPath: endPosition = position; break;
 			}
@@ -170,26 +183,20 @@ void saveMap(std::string fileName, const Math::Matrix2d<char>& view)
 
 int main()
 {
-	Math::Vector2d beginPosition{ 0, 0 };
-	Math::Vector2d endPosition{ 100, 100 };
+	Math::Vector2d beginPosition = DefaultBeginPosition;
+	Math::Vector2d endPosition = DefaultEndPosition;
 
 	//auto map = loadMap("input_1000_1000.txt", beginPosition, endPosition);// generateMap();
 	auto map = loadMap("input.txt", beginPosition, endPosition);
-
 
 	//force empty field
 	map.SetField(beginPosition, World::FieldType::None);
 	map.SetField(endPosition, World::FieldType::None);
 
-
-	bool Debug = true;
-	constexpr bool Async = true;
-	double FPS = 1.;
-	size_t FrameTime = size_t(1000. / FPS);
-
 	//copy map for async path finding
 	auto mapAsync = map;
 	PathFinder::AStarPathFinder pathFinder(mapAsync);
+	pathFinder.SetHasDiagonalMove(HasDiagonalMove);
 
 	std::future<PathFinder::IPathFinderResult> future =
 		std::async(Async ? std::launch::async : std::launch::deferred, [&]()
@@ -245,7 +252,7 @@ int main()
 			draw(view);
 
 		//save to file
-		if (wasStopped != pathFinderStopped)
+		if (wasStopped != pathFinderStopped && SaveToFile)
 		{
 			saveMap("output.txt", view);
 		}
