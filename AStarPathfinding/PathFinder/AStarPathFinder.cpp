@@ -119,7 +119,7 @@ namespace PathFinder
 				if (m_map.IsInside(position) && m_map.GetField(position) != World::FieldType::Obstacle)
 				{
 					double hWeight = GetDistance(position, m_end);
-					double gWeight = node.gWeight + 1.;
+					double gWeight = node.gWeight + GetDistance(position, node.Position);
 
 					result.emplace_back(AStarNode{ position, gWeight, hWeight + gWeight });
 				}
@@ -134,7 +134,7 @@ namespace PathFinder
 				if (m_map.IsInside(position) && m_map.GetField(position) != World::FieldType::Obstacle)
 				{
 					double hWeight = GetDistance(position, m_end);
-					double gWeight = node.gWeight + 1.;
+					double gWeight = node.gWeight + GetDistance(position, node.Position);
 
 					result.emplace_back(AStarNode{ position, gWeight, hWeight + gWeight });
 				}
