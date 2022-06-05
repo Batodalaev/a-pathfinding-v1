@@ -68,9 +68,11 @@ int main()
 
 	
 	AStarPathFinder pathFinder(map);
-	const auto found = pathFinder.FindPath(beginPosition, endPosition);
+	const bool found = pathFinder.FindPath(beginPosition, endPosition) == IPathFinderResult::Found;
 
-	std::cout << (found == IPathFinderResult::Found ? "Path found\n" : "Path not found\n");
+	std::cout << (found? "Path found\n" : "Path not found\n");
+	if (found)
+		std::cout << "Path length: " << pathFinder.GetPath().size();
 
 	return 0;
 
