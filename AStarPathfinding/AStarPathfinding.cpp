@@ -126,10 +126,10 @@ World::Map2d generateMap()
 	//constexpr int RandomSeed = 2;
 	//constexpr int ObstacleCount = 1000;// Width* Height / 10;
 
-	constexpr size_t Width = 1000;
-	constexpr size_t Height = 1000;
+	constexpr size_t Width = 5000;
+	constexpr size_t Height = 5000;
 	constexpr int RandomSeed = 0;
-	constexpr int ObstacleCount = Width* Height / 100;
+	constexpr int ObstacleCount = Width* Height / 4000;
 
 	World::Map2d map(Width, Height);
 
@@ -159,8 +159,7 @@ std::array<Math::Vector2d, 2> generatePositions(const World::Map2d& map)
 		size_t end = size_t(rand()) % (map.GetHeight() * map.GetWidth());
 		endPosition = Math::Vector2d{ end / map.GetWidth(), end % map.GetWidth() };
 
-	} while (beginPosition == endPosition ||
-		map.GetField(beginPosition) == World::FieldType::Obstacle || map.GetField(endPosition) == World::FieldType::Obstacle);
+	} while (beginPosition == endPosition);
 
 	return { beginPosition, endPosition };
 }
@@ -170,6 +169,11 @@ int main()
 	auto positions = generatePositions(map);
 	auto beginPosition = positions[0];
 	auto endPosition = positions[1];
+
+	//force empty field
+	map.SetField(beginPosition, World::FieldType::None);
+	map.SetField(endPosition, World::FieldType::None);
+
 
 	bool Debug = true;
 	constexpr bool Async = true;
