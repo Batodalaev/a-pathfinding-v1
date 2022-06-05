@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <unordered_map>
 #include <set>
 
 #include "IPathFinder.h"
@@ -47,7 +48,7 @@ private:
 	const IMap<Vector2d>& m_map;
 
 	std::vector<Vector2d> m_path;
-	std::vector<AStarNode> m_closedList;
+	std::unordered_map<Vector2d, AStarNode> m_closedList;
 	std::set<AStarNode> m_openList;
 
 	Vector2d m_begin;

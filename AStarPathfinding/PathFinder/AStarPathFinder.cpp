@@ -1,5 +1,6 @@
-#include "AStarPathfinder.h"
+#include <cassert>
 
+#include "AStarPathfinder.h"
 IPathFinderResult AStarPathFinder::FindPath(const Vector2d& begin, const Vector2d& end)
 {
 	m_begin = begin;
@@ -36,15 +37,12 @@ IPathFinderResult AStarPathFinder::FindPath(const Vector2d& begin, const Vector2
 			}
 
 			auto it2 = m_openList.find(childNode);
-			if (it2 != std::end(m_openList) && it2->fWeight < childNode.fWeight)
+			if (it2 != std::end(m_openList) && it2->fWeight <= childNode.fWeight)
 				continue;
 
-			auto it3 = std::find_if(std::begin(m_closedList), std::end(m_closedList), [&childNode](const AStarNode& value)
-				{
-					return value.Position == childNode.Position;
-				});
+			auto it3 = m_closedList.find(childNode.Position);
 
-			if (it3 != std::end(m_closedList) && it3->fWeight < childNode.fWeight)
+			if (it3 != std::end(m_closedList) && it3->second.fWeight <= childNode.fWeight)
 				continue;
 
 			//todo replace
@@ -54,8 +52,14 @@ IPathFinderResult AStarPathFinder::FindPath(const Vector2d& begin, const Vector2
 			m_openList.emplace(childNode);
 		}
 
-		//node checked
-		m_closedList.emplace_back(node);
+		//node checked 
+		auto pair = m_closedList.emplace(node.Position, node);
+
+		//(replace if exists and lower f
+		if (!pair.second && pair.first->second.fWeight > node.fWeight)
+		{
+			pair.first->second = node;
+		}
 	}
 
 	return IPathFinderResult::NotFound;
@@ -68,7 +72,7 @@ std::vector<Vector2d> AStarPathFinder::GetClosedList() const
 
 	for (auto&& node : m_closedList)
 	{
-		result.emplace_back(node.Position);
+		result.emplace_back(node.second.Position);
 	}
 
 	return result;
@@ -106,15 +110,17 @@ void AStarPathFinder::GetSuccessors(const AStarNode& node, std::vector<AStarNode
 
 void AStarPathFinder::FillPath(const AStarNode& node)
 {
+	const size_t length = node.gWeight + 1;
+	m_path.reserve(length);
+
+	m_path.emplace_back(m_end);
+
 	auto currentNode = node;
 
 	while (currentNode.Position != m_begin)
 	{
 		m_path.emplace_back(currentNode.Position);
 
-		currentNode = *std::find_if(std::begin(m_closedList), std::end(m_closedList), [&currentNode](const AStarNode& value)
-			{
-				return value.Position == currentNode.ParentPosition;
-			});
+		currentNode = m_closedList.find(currentNode.ParentPosition)->second;
 	}
 }

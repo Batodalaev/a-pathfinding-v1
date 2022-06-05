@@ -22,6 +22,21 @@ constexpr bool operator < (const Vector2d& lhs, const Vector2d& rhs)
 	return lhs.X < rhs.X&& lhs.Y < rhs.Y;
 }
 
+namespace std {
+
+	template <>
+	struct hash<Vector2d>
+	{
+		size_t operator()(const Vector2d& pos) const
+		{
+			size_t rowHash = std::hash<size_t>()(pos.X);
+			size_t colHash = std::hash<size_t>()(pos.Y) << 1;
+			return rowHash ^ colHash;
+		}
+	};
+
+}
+
 //4 way
 constexpr size_t ManhattanDistance(const Vector2d& lhs, const Vector2d& rhs)
 {
