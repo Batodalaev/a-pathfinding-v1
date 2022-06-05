@@ -47,6 +47,9 @@ namespace PathFinder
 
 		std::vector<Math::Vector2d> GetClosedList() const;
 		std::vector<Math::Vector2d> GetOpenList() const;
+
+		//todo IMapWalker
+		void SetHasDiagonalMove(bool has) noexcept { m_hasDiagonalMove = has; }
 	private:
 		const World::IMap<Math::Vector2d>& m_map;
 
@@ -69,6 +72,7 @@ namespace PathFinder
 		Math::Vector2d m_end;
 
 		IPathFinderResult m_result = IPathFinderResult::NotFound;
+		bool m_hasDiagonalMove = true;
 
 		void GetSuccessors(const AStarNode& node, std::vector<AStarNode>& result) const noexcept;
 		void FillPath(const AStarNode& node);

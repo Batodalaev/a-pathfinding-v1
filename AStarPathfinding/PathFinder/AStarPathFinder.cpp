@@ -21,7 +21,7 @@ namespace PathFinder
 		//temp
 		std::vector<AStarNode> childNodes;
 
-		double hBegin = Math::EuclideanDistance(begin, end);
+		double hBegin = m_hasDiagonalMove ? Math::EuclideanDistance(begin, end) : Math::ManhattanDistance(begin, end);
 		AStarNode beginNode{ begin, 0, hBegin + 0 };
 		NodeData beginNodeData{ Math::Vector2d(), beginNode.fWeight, true, false };
 
@@ -109,16 +109,34 @@ namespace PathFinder
 
 	void AStarPathFinder::GetSuccessors(const AStarNode& node, std::vector<AStarNode>& result) const noexcept
 	{
-		const auto positions = Math::GetNeighours8way(node.Position);
-	
-		for (auto&& position : positions)
+		if (m_hasDiagonalMove)
 		{
-			if (m_map.IsInside(position) && m_map.GetField(position) != World::FieldType::Obstacle)
-			{
-				double hWeight = Math::EuclideanDistance(position, m_end);
-				double gWeight = node.gWeight + 1.;
+			const auto positions = Math::GetNeighours8way(node.Position);
 
-				result.emplace_back(AStarNode{ position, gWeight, hWeight + gWeight });
+			for (auto&& position : positions)
+			{
+				if (m_map.IsInside(position) && m_map.GetField(position) != World::FieldType::Obstacle)
+				{
+					double hWeight = Math::EuclideanDistance(position, m_end);
+					double gWeight = node.gWeight + 1.;
+
+					result.emplace_back(AStarNode{ position, gWeight, hWeight + gWeight });
+				}
+			}
+		}
+		else
+		{
+			const auto positions = Math::GetNeighours4way(node.Position);
+
+			for (auto&& position : positions)
+			{
+				if (m_map.IsInside(position) && m_map.GetField(position) != World::FieldType::Obstacle)
+				{
+					double hWeight = double(Math::ManhattanDistance(position, m_end));
+					double gWeight = node.gWeight + 1.;
+
+					result.emplace_back(AStarNode{ position, gWeight, hWeight + gWeight });
+				}
 			}
 		}
 	}
