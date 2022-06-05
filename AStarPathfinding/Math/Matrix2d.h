@@ -47,5 +47,10 @@ namespace Math
 		{
 			return position.X < m_height && position.Y < m_width;
 		}
+
+		void Clear() noexcept
+		{
+			std::fill(begin(m_fields), end(m_fields), T());
+		}
 	};
 }
