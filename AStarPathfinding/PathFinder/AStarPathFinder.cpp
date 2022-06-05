@@ -40,7 +40,7 @@ namespace PathFinder
 				}
 
 				auto it2 = m_openList.find(childNode);
-				if (it2 != std::end(m_openList) && it2->fWeight <= childNode.fWeight)
+				if (it2 != std::end(m_openList) && it2->fWeight < childNode.fWeight)
 					continue;
 
 				auto it3 = m_closedList.find(childNode.Position);
