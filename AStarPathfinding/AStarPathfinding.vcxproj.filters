@@ -22,9 +22,6 @@
     <Filter Include="World">
       <UniqueIdentifier>{46715373-90ab-45ac-897e-2b68c607a2bd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Visualizer">
-      <UniqueIdentifier>{f2a2fe6e-7039-4b55-83dc-cd84e6e96e1a}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AStarPathfinding.cpp">
