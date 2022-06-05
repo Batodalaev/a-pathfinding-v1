@@ -18,20 +18,33 @@
 #include "World/Map2d.h"
 #include "PathFinder/AStarPathFinder.h"
 
+namespace
+{
+	constexpr char Obstacle = 'X';
+	constexpr char EmptyField = ' ';
+	constexpr char BeginPath = 'b';
+	constexpr char IntermediatePath = 'i';
+	constexpr char EndPath = 'e';
+	constexpr char OpenListFieldPath = 'o';
+	constexpr char ClosedListFieldPath = 'c';
+
+	constexpr size_t MaxViewWidth = 79;
+	constexpr size_t MaxViewHeight = 65;
+}
 
 constexpr char GetFieldTypeView(World::FieldType field) noexcept
 {
 	switch (field)
 	{
 	case World::FieldType::Obstacle:
-		return 'X';
+		return Obstacle;
 	case World::FieldType::None:
-		return ' ';
+		return EmptyField;
 	default:
 		assert(false);
 		break;
 	}
-	return ' ';
+	return EmptyField;
 }
 
 void renderPath(Math::Matrix2d<char>& view, const PathFinder::IPath<Math::Vector2d>& path, char type)
@@ -89,15 +102,15 @@ void renderPathFinder(Math::Matrix2d<char>& view, const PathFinder::AStarPathFin
 		const auto& openList = pathFinder.GetOpenList();
 		const auto& closedList = pathFinder.GetClosedList();
 
-		renderArray(view, openList, 'o');
-		renderArray(view, closedList, 'c');
+		renderArray(view, openList, OpenListFieldPath);
+		renderArray(view, closedList, ClosedListFieldPath);
 	}
 
 	if (found)
 	{
 		const auto& path = pathFinder.GetPath();
 
-		renderPath(view, path, 'i');
+		renderPath(view, path, IntermediatePath);
 	}
 }
 
@@ -108,10 +121,15 @@ World::Map2d generateMap()
 	//constexpr int RandomSeed = 0;
 	//constexpr int ObstacleCount = 16;
 
-	constexpr size_t Width = 79;
-	constexpr size_t Height = 65;
-	constexpr int RandomSeed = 2;
-	constexpr int ObstacleCount = 1000;// Width* Height / 10;
+	//constexpr size_t Width = 79;
+	//constexpr size_t Height = 65;
+	//constexpr int RandomSeed = 2;
+	//constexpr int ObstacleCount = 1000;// Width* Height / 10;
+
+	constexpr size_t Width = 1000;
+	constexpr size_t Height = 1000;
+	constexpr int RandomSeed = 0;
+	constexpr int ObstacleCount = Width* Height / 100;
 
 	World::Map2d map(Width, Height);
 
@@ -153,8 +171,8 @@ int main()
 	auto beginPosition = positions[0];
 	auto endPosition = positions[1];
 
-	bool Debug = false;
-	constexpr bool Async = false;
+	bool Debug = true;
+	constexpr bool Async = true;
 	double FPS = 1.;
 	size_t FrameTime = size_t(1000. / FPS);
 
@@ -194,21 +212,25 @@ int main()
 		{
 			renderPathFinder(view, pathFinder, Debug);
 		}
-		view.SetField(beginPosition, 'b');
-		view.SetField(endPosition, 'e');
+		view.SetField(beginPosition, BeginPath);
+		view.SetField(endPosition, EndPath);
 
 		//draw to console
 		system("cls");
 		if (pathFinderStopped)
 		{
 			const bool found = pathFinder.GetResult() == PathFinder::IPathFinderResult::Found;
-			std::cout << (found ? "Path found\n\n" : "Path not found\n\n");
+			std::cout << (found ? "Path found\n" : "Path not found\nn");
+			if (found)
+				std::cout << "Path length: " << pathFinder.GetPath().GetLength() << "\n";
 		}
 		else
 		{
 			std::cout << "Finding a path\n\n";
 		}
-		draw(view);
+
+		if(view.GetWidth() <= MaxViewWidth && view.GetHeight() <= MaxViewHeight)
+			draw(view);
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(FrameTime));
 	}
