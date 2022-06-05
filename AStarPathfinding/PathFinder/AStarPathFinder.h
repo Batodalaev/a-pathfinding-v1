@@ -6,19 +6,19 @@
 #include "IPathFinder.h"
 #include "Path2d.h"
 
-#include "..\World\IMap.h"
+#include "..\World\Map2d.h"
 #include "..\Math\Vector2d.h"
+#include "..\Math\Matrix2d.h"
 
 namespace PathFinder
 {
 	namespace details
 	{
-		struct AStarNode
+		struct AStarNode final
 		{
 			Math::Vector2d Position;
-			Math::Vector2d ParentPosition;
 
-			double hWeight = 0.;
+			//double hWeight = 0.;
 			double gWeight = 0.;
 			double fWeight = 0.;
 		};
@@ -38,7 +38,7 @@ namespace PathFinder
 
 	public:
 		AStarPathFinder() = delete;
-		AStarPathFinder(const World::IMap<Math::Vector2d>& map) : m_map(map) {}
+		AStarPathFinder(const World::Map2d& map) : m_map(map), m_searchData(map.GetWidth(), map.GetHeight()){}
 		~AStarPathFinder() override = default;
 
 		IPathFinderResult FindPath(const Math::Vector2d& begin, const Math::Vector2d& end) override;
@@ -50,7 +50,18 @@ namespace PathFinder
 	private:
 		const World::IMap<Math::Vector2d>& m_map;
 
-		std::unordered_map<Math::Vector2d, AStarNode> m_closedList;
+		struct NodeData final
+		{
+			Math::Vector2d ParentPosition;
+			double FWeight = 0.f;
+
+			//TODO compress to 1 byte (maybe not need?)
+			bool InOpenList = false;
+			bool InClosedList = false;
+		};
+		Math::Matrix2d<NodeData> m_searchData;
+		bool m_searchDataDirty = false;
+
 		std::multiset<AStarNode> m_openList;
 		Path2d m_path;
 

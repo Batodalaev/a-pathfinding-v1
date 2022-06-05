@@ -6,20 +6,27 @@ namespace PathFinder
 {
 	IPathFinderResult AStarPathFinder::FindPath(const Math::Vector2d& begin, const Math::Vector2d& end)
 	{
+		if (m_searchDataDirty)
+		{
+			m_searchData.Clear();
+		}
+
 		m_result = IPathFinderResult::NotFound;
 		m_begin = begin;
 		m_end = end;
 
 		m_openList.clear();
-		m_closedList.clear();
 		m_path = Path2d();
 
 		//temp
 		std::vector<AStarNode> childNodes;
 
 		double hBegin = Math::EuclideanDistance(begin, end);
-		AStarNode beginNode{ begin, begin, hBegin, 0, hBegin + 0 };
+		AStarNode beginNode{ begin, 0, hBegin + 0 };
+		NodeData beginNodeData{ Math::Vector2d(), beginNode.fWeight, true, false };
+
 		m_openList.insert(beginNode);
+		m_searchData.SetField(begin, beginNodeData);
 
 		while (!m_openList.empty())
 		{
@@ -41,26 +48,26 @@ namespace PathFinder
 					return m_result;
 				}
 
-				auto it2 = m_openList.find(childNode);
-				if (it2 != std::end(m_openList) && it2->fWeight < childNode.fWeight)
+				auto&& childNodeData = m_searchData.GetField(childNode.Position);
+
+				if (childNodeData.InOpenList && childNodeData.FWeight <= childNode.fWeight)
+					continue;
+				if (childNodeData.InClosedList && childNodeData.FWeight <= childNode.fWeight)
 					continue;
 
-				auto it3 = m_closedList.find(childNode.Position);
+				childNodeData.ParentPosition = node.Position;
+				childNodeData.FWeight = childNode.fWeight;
+				childNodeData.InOpenList = true;
+				//nodeData.InClosedList;
 
-				if (it3 != std::end(m_closedList) && it3->second.fWeight < childNode.fWeight)
-					continue;
-
+				m_searchData.SetField(childNode.Position, childNodeData);
 				m_openList.emplace(childNode);
 			}
 
-			//node checked 
-			auto pair = m_closedList.emplace(node.Position, node);
-
-			//(replace if exists and lower f
-			if (!pair.second && pair.first->second.fWeight > node.fWeight)
-			{
-				pair.first->second = node;
-			}
+			auto&& nodeData = m_searchData.GetField(node.Position);
+			nodeData.InOpenList = false;
+			nodeData.InClosedList = true;
+			m_searchData.SetField(node.Position, nodeData);
 		}
 
 		return m_result;
@@ -69,11 +76,15 @@ namespace PathFinder
 	std::vector<Math::Vector2d> AStarPathFinder::GetClosedList() const
 	{
 		std::vector<Math::Vector2d> result;
-		result.reserve(m_closedList.size());
 
-		for (auto&& node : m_closedList)
+		for (size_t x = 0; x < m_searchData.GetHeight(); ++x)
 		{
-			result.emplace_back(node.second.Position);
+			for (size_t y = 0; y < m_searchData.GetWidth(); ++y)
+			{
+				Math::Vector2d position{ x, y };
+				if (m_searchData.GetField(position).InClosedList)
+					result.emplace_back(position);
+			}
 		}
 
 		return result;
@@ -82,11 +93,15 @@ namespace PathFinder
 	std::vector<Math::Vector2d> AStarPathFinder::GetOpenList() const
 	{
 		std::vector<Math::Vector2d> result;
-		result.reserve(m_openList.size());
 
-		for (auto&& node : m_openList)
+		for (size_t x = 0; x < m_searchData.GetHeight(); ++x)
 		{
-			result.emplace_back(node.Position);
+			for (size_t y = 0; y < m_searchData.GetWidth(); ++y)
+			{
+				Math::Vector2d position{ x, y };
+				if (m_searchData.GetField(position).InOpenList)
+					result.emplace_back(position);
+			}
 		}
 
 		return result;
@@ -103,7 +118,7 @@ namespace PathFinder
 				double hWeight = Math::EuclideanDistance(position, m_end);
 				double gWeight = node.gWeight + 1.;
 
-				result.emplace_back(AStarNode{ position, node.Position, hWeight , gWeight, hWeight + gWeight });
+				result.emplace_back(AStarNode{ position, gWeight, hWeight + gWeight });
 			}
 		}
 	}
@@ -116,13 +131,13 @@ namespace PathFinder
 
 		path.emplace_back(m_end);
 
-		auto currentNode = node;
+		auto currentPosition = node.Position;
 
-		while (currentNode.Position != m_begin)
+		while (currentPosition != m_begin)
 		{
-			path.emplace_back(currentNode.Position);
+			path.emplace_back(currentPosition);
 
-			currentNode = m_closedList.find(currentNode.ParentPosition)->second;
+			currentPosition = m_searchData.GetField(currentPosition).ParentPosition; 
 		}
 
 		m_path = Path2d(std::move(path));
